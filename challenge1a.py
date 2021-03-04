@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import json
 from operator import itemgetter
 import argparse
+import os
 
 def fetchHTML(row_index, search_query):
     url_query = search_query.replace(" ", "+")
@@ -38,14 +39,16 @@ def parseHTML(prepped_results):
 
     for table_elem in table_elems:
         product_elem = table_elem.find('td', class_='LeftCellSpacer')
+        product_link = table_elem.find('a')
         title_elem = table_elem.find('td', class_='MiddleCellSpacer')
         date_elem = table_elem.find('td', class_='EndCellSpacer')
 
         form = product_elem.text.strip()
+        link = product_link.get('href')
         title = title_elem.text.strip()
         year = date_elem.text.strip()
-
-        entry = {"form_number": form, "form_title": title, "year": year}
+        
+        entry = {"form_number": form, "form_title": title, "year": year, "link": link}
         Prior_year_product_data.append(entry)
     
     return Prior_year_product_data
@@ -76,17 +79,53 @@ def sort_data(parsed_data, query_term):
             print("no items matched the query")
     return sorted_list
 
+def make_pdf_list(matching_term_list, min_year, max_year):
+    year_list = []
+    items_to_download = []
+    if matching_term_list:
+        for year in range(min_year - 1, max_year):
+            year_list.append(year + 1)
+            for list_item in matching_term_list:
+                for form_year in year_list:
+                    if list_item["year"] == str(form_year):
+                        items_to_download.append(list_item)
+    else:
+        print("no items in the list match the year range")
+    return items_to_download
+
+def download_pdfs(list_of_pdfs):
+    if list_of_pdfs:
+        path = os.mkdir("./pdfs")
+        for item in list_of_pdfs:
+
+            print('Beginning file download with requests')
+
+            url = item["link"]
+            print(url)
+            
+            r = requests.get(url)
+
+            with open(path, 'wb') as f:
+                f.write(r.content)
+
+            # Retrieve HTTP meta-data
+            print(r.status_code)
+            print(r.headers['content-type'])
+            print(r.encoding)
+            
+
 def convert_to_json(managed_list):
     json_results = json.dumps(managed_list, indent=1)
     print(json_results)
 
-
 def string_to_list(form_string):
-    
-    form_list = list(form_string.split(","))
+    if form_string.find(",") > -1:
+        form_list = list(form_string.split(","))
+    else:
+        form_list = list(form_string)
     return form_list
 
-    # USE THE SCRIPT AS A COMMAND-LINE INTERFACE
+# USE THE SCRIPT AS A COMMAND-LINE INTERFACE
 # ----------------------------------------------------------------------------
 my_parser = argparse.ArgumentParser(
     prog="pinwheel-irs-JSON", description="returns json results of irs forms site scrape"
@@ -116,5 +155,8 @@ for term in search_query:
         page_index += 200
 sorted_data = sort_data(parsed_html, search_query)
 json_conversion = convert_to_json(sorted_data)
+
+pdfs = make_pdf_list(parsed_html, 2018, 2020)
+download_pdfs(pdfs)
 
 
