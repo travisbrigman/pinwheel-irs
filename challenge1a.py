@@ -15,13 +15,13 @@ def fetchHTML(row_index, search_query):
 def prepHTML(fetched_html):
     table_body_results = fetched_html.find(id='picklistContentPane')
     page_number = fetched_html.find('th', class_='ShowByColumn')
-    print(page_number)
 
+    clean_pages = ""
     if page_number is not None:
         clean_pages = page_number.text.strip()
     else:
-        print("query not found")
-        
+        print("page_numbers not found")
+
     if clean_pages.__contains__(","):
         comma_killer = clean_pages.replace(",", "")
         page_numbers = [int(i) for i in comma_killer.split() if i.isdigit()] 
@@ -46,7 +46,7 @@ def parseHTML(prepped_results):
 
         entry = {"form_number": form, "form_title": title, "year": year}
         Prior_year_product_data.append(entry)
-
+    
     return Prior_year_product_data
 
 def sort_data(parsed_data, query_term):
@@ -79,18 +79,19 @@ def convert_to_json(managed_list):
     print(json_results)
 
 
-page_index = 0
 search_query = ["Form W-2", "Form 11-C", "Form 1095-C"]
 
+
 for term in search_query:
+    page_index = 0
+    page_list = [0, 0, 1]
     parsed_html = []
-
-    html = fetchHTML(page_index, term)
-
-    table_body_results, page_numbers = prepHTML(html)
-    parsed_markup = parseHTML(table_body_results)
-    if page_numbers[1] < page_numbers[2]:
+    while page_list[1] < page_list[2]:
+        html = fetchHTML(page_index, term)
+        table_body_results, page_numbers = prepHTML(html)
+        page_list = page_numbers
+        parsed_markup = parseHTML(table_body_results)
+        parsed_html.extend(parsed_markup)
         page_index += 200
-    parsed_html.extend(parsed_markup)
-    sorted_data = sort_data(parsed_markup, term)
+    sorted_data = sort_data(parsed_html, term)
     json_conversion = convert_to_json(sorted_data)
