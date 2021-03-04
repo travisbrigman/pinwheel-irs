@@ -50,28 +50,29 @@ def parseHTML(prepped_results):
     return Prior_year_product_data
 
 def sort_data(parsed_data, query_term):
-    Query_results = []
+    sorted_list = []
 
-    if len(parsed_data) is not None:
-        for entry in parsed_data:
-            if entry["form_number"].upper() == query_term.upper():
-                Query_results.append(entry)
-            else:
-                print(f"error - {entry} doesn't match query {query_term}")
-    if len(Query_results) != 0:
-        sorted_query_results = sorted(Query_results, key=itemgetter('year'))
+    for term in query_term:
+        Query_results = []
+        
+        if len(parsed_data) is not None:
+            for entry in parsed_data:
+                if entry["form_number"].upper() == term.upper():
+                    Query_results.append(entry)
+                else:
+                    print(f"error - {entry['form_number']} doesn't match query {term}")
+        if len(Query_results) != 0:
+            sorted_query_results = sorted(Query_results, key=itemgetter('year'))
 
-        form_number = sorted_query_results[0]["form_number"]
-        form_title = sorted_query_results[0]["form_title"]
-        min_year = sorted_query_results[0]["year"]
-        max_year= sorted_query_results[-1]["year"]
+            form_number = sorted_query_results[0]["form_number"]
+            form_title = sorted_query_results[0]["form_title"]
+            min_year = sorted_query_results[0]["year"]
+            max_year= sorted_query_results[-1]["year"]
 
-        sorted_result = {"form_number": form_number, "form_title": form_title, "min_year": min_year, "max_year": max_year}
-
-        sorted_list = []
-        sorted_list.append(sorted_result)
-    else:
-        print("no items matched the query")
+            sorted_result = {"form_number": form_number, "form_title": form_title, "min_year": min_year, "max_year": max_year}
+            sorted_list.append(sorted_result)
+        else:
+            print("no items matched the query")
     return sorted_list
 
 def convert_to_json(managed_list):
@@ -81,11 +82,11 @@ def convert_to_json(managed_list):
 
 search_query = ["Form W-2", "Form 11-C", "Form 1095-C"]
 
+parsed_html = []
 
 for term in search_query:
     page_index = 0
     page_list = [0, 0, 1]
-    parsed_html = []
     while page_list[1] < page_list[2]:
         html = fetchHTML(page_index, term)
         table_body_results, page_numbers = prepHTML(html)
@@ -93,5 +94,5 @@ for term in search_query:
         parsed_markup = parseHTML(table_body_results)
         parsed_html.extend(parsed_markup)
         page_index += 200
-    sorted_data = sort_data(parsed_html, term)
-    json_conversion = convert_to_json(sorted_data)
+sorted_data = sort_data(parsed_html, search_query)
+json_conversion = convert_to_json(sorted_data)
