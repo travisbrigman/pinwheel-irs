@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 from operator import itemgetter
+import argparse
 
 def fetchHTML(row_index, search_query):
     url_query = search_query.replace(" ", "+")
@@ -54,7 +55,7 @@ def sort_data(parsed_data, query_term):
 
     for term in query_term:
         Query_results = []
-        
+
         if len(parsed_data) is not None:
             for entry in parsed_data:
                 if entry["form_number"].upper() == term.upper():
@@ -76,11 +77,30 @@ def sort_data(parsed_data, query_term):
     return sorted_list
 
 def convert_to_json(managed_list):
-    json_results = json.dumps(managed_list)
+    json_results = json.dumps(managed_list, indent=1)
     print(json_results)
 
 
-search_query = ["Form W-2", "Form 11-C", "Form 1095-C"]
+def string_to_list(form_string):
+    
+    form_list = list(form_string.split(","))
+    return form_list
+
+    # USE THE SCRIPT AS A COMMAND-LINE INTERFACE
+# ----------------------------------------------------------------------------
+my_parser = argparse.ArgumentParser(
+    prog="pinwheel-irs-JSON", description="returns json results of irs forms site scrape"
+)
+my_parser.add_argument(
+    "-forms", metavar="forms", type=str, help="comma seperated string of forms"
+)
+
+args = my_parser.parse_args()
+forms = args.forms
+
+search_query = string_to_list(forms)
+# ----------------------------------------------------------------------------
+# search_query = ["Form W-2", "Form 11-C", "Form 1095-C"]
 
 parsed_html = []
 
@@ -96,3 +116,5 @@ for term in search_query:
         page_index += 200
 sorted_data = sort_data(parsed_html, search_query)
 json_conversion = convert_to_json(sorted_data)
+
+
