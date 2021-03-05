@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import json
 from operator import itemgetter
 import argparse
+import urllib.request
 import os
 
 def fetchHTML(row_index, search_query):
@@ -95,23 +96,22 @@ def make_pdf_list(matching_term_list, min_year, max_year):
 
 def download_pdfs(list_of_pdfs):
     if list_of_pdfs:
-        path = os.mkdir("./pdfs")
+        cwd = os.getcwd()
+        directory = "pdfs"
+        path = os.path.join(cwd, directory)
+        
+        try: 
+            os.mkdir(path) 
+        except OSError as error: 
+            print(error)
+        
         for item in list_of_pdfs:
-
-            print('Beginning file download with requests')
-
+            file_name = f"{item['form_number']}-{item['year']}.pdf"
+            file_name_dir = os.path.join(path, file_name)
             url = item["link"]
-            print(url)
-            
-            r = requests.get(url)
+            print('Beginning file download with urllib2...')
 
-            with open(path, 'wb') as f:
-                f.write(r.content)
-
-            # Retrieve HTTP meta-data
-            print(r.status_code)
-            print(r.headers['content-type'])
-            print(r.encoding)
+            urllib.request.urlretrieve(url, file_name_dir)
             
 
 def convert_to_json(managed_list):
@@ -122,7 +122,8 @@ def string_to_list(form_string):
     if form_string.find(",") > -1:
         form_list = list(form_string.split(","))
     else:
-        form_list = list(form_string)
+        form_list = []
+        form_list.append(form_string)
     return form_list
 
 # USE THE SCRIPT AS A COMMAND-LINE INTERFACE
