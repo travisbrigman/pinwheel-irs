@@ -78,13 +78,13 @@ def sort_data(parsed_data, query_term):
             sorted_list.append(sorted_result)
         else:
             print("no items matched the query")
-    return sorted_list
+    return sorted_list, Query_results
 
 def make_pdf_list(matching_term_list, min_year, max_year):
     year_list = []
     items_to_download = []
     if matching_term_list:
-        for year in range(min_year - 1, max_year):
+        for year in range(int(min_year) - 1, int(max_year)):
             year_list.append(year + 1)
             for list_item in matching_term_list:
                 for form_year in year_list:
@@ -132,13 +132,29 @@ my_parser = argparse.ArgumentParser(
     prog="pinwheel-irs-JSON", description="returns json results of irs forms site scrape"
 )
 my_parser.add_argument(
-    "-forms", metavar="forms", type=str, help="comma seperated string of forms"
+    "-forms_info", metavar="forms_info", type=str, help="comma seperated string of forms"
+)
+my_parser.add_argument(
+    "-forms_download", metavar="forms_download", type=str, help="single case-insensitive search term"
+)
+my_parser.add_argument(
+    "-min_year", metavar="min_year", type=str, help="the minimum year"
+)
+my_parser.add_argument(
+    "-max_year", metavar="max_year", type=str, help="the maximum year"
 )
 
 args = my_parser.parse_args()
-forms = args.forms
+forms_info = args.forms_info
+forms_download = args.forms_download
+min_year = args.min_year
+max_year = args.max_year
 
-search_query = string_to_list(forms)
+if forms_info:
+    search_query = string_to_list(forms_info)
+elif (forms_download, min_year, max_year):
+    search_query = string_to_list(forms_download)
+
 # ----------------------------------------------------------------------------
 # search_query = ["Form W-2", "Form 11-C", "Form 1095-C"]
 
@@ -154,10 +170,12 @@ for term in search_query:
         parsed_markup = parseHTML(table_body_results)
         parsed_html.extend(parsed_markup)
         page_index += 200
-sorted_data = sort_data(parsed_html, search_query)
-json_conversion = convert_to_json(sorted_data)
+sorted_data, filtered_list = sort_data(parsed_html, search_query)
+if forms_info:
+    json_conversion = convert_to_json(sorted_data)
+elif (forms_download, min_year, max_year):
+    pdfs = make_pdf_list(filtered_list, min_year, max_year)
+    download_pdfs(pdfs)
 
-pdfs = make_pdf_list(parsed_html, 2018, 2020)
-download_pdfs(pdfs)
 
 
