@@ -1,0 +1,4 @@
+
+    [console_scripts]
+    pinwheelIRS=pinwheelIRS.pinwheelIRS:main
+    

@@ -6,6 +6,85 @@ import argparse
 import urllib.request
 import os
 import re
+import click
+
+# USE THE SCRIPT AS A COMMAND-LINE INTERFACE
+# ----------------------------------------------------------------------------
+
+# years = []
+# for year in range(1912, 2022):
+#     years.append(year)
+#     year+=1
+
+# my_parser = argparse.ArgumentParser(
+#     prog="pinwheel-irs-JSON", description="returns json results of irs forms site scrape"
+# )
+# my_parser.add_argument(
+#     "-forms_info", metavar="forms_info", type=str, help="comma seperated string of forms"
+# )
+# my_parser.add_argument(
+#     "-forms_download", metavar="forms_download", type=str, help="single case-insensitive search term"
+# )
+# my_parser.add_argument(
+#     "-min_year", metavar="min_year", type=int, help="the minimum year", choices = years
+# )
+# my_parser.add_argument(
+#     "-max_year", metavar="max_year", type=int, help="the maximum year", choices= years
+# )
+
+# args = my_parser.parse_args()
+# forms_info = args.forms_info
+# forms_download = args.forms_download
+# min_year = args.min_year
+# max_year = args.max_year
+
+# def string_to_list(form_string):
+#     if form_string.find(",") > -1:
+#         form_list = list(form_string.split(","))
+#     else:
+#         form_list = []
+#         form_list.append(form_string)
+#     return form_list
+
+# if forms_info:
+#     search_query = string_to_list(forms_info)
+# elif (forms_download, min_year, max_year):
+#     search_query = string_to_list(forms_download)
+
+# ----------------------------------------------------------------------------
+@click.command()
+@click.argument('search_query')
+@click.option('--min-year', default=1913)
+@click.option('--max-year', default=2021)
+def main(search_query, min_year, max_year):
+
+    string_to_list(search_query)
+    parsed_html = []
+
+    for term in search_query:
+        page_index = 0
+        page_list = [0, 0, 1]
+        while page_list[1] < page_list[2]:
+            html = fetchHTML(page_index, term)
+            table_body_results, page_numbers = prepHTML(html)
+            page_list = page_numbers
+            parsed_markup = parseHTML(table_body_results)
+            parsed_html.extend(parsed_markup)
+            page_index += 200
+    sorted_data, filtered_list = sort_data(parsed_html, search_query)
+    if search_query:
+        json_conversion = convert_to_json(sorted_data)
+    elif (search_query, min_year, max_year):
+        pdfs = make_pdf_list(filtered_list, min_year, max_year)
+        download_pdfs(pdfs)
+
+def string_to_list(form_string):
+    if form_string.find(",") > -1:
+        form_list = list(form_string.split(","))
+    else:
+        form_list = []
+        form_list.append(form_string)
+    return form_list
 
 def fetchHTML(row_index, search_query):
     url_query = search_query.replace(" ", "+")
@@ -130,71 +209,8 @@ def convert_to_json(managed_list):
     elif user_input_create_file == "N":
         print("Ok, thanks running this script! 🐍")
 
-def string_to_list(form_string):
-    if form_string.find(",") > -1:
-        form_list = list(form_string.split(","))
-    else:
-        form_list = []
-        form_list.append(form_string)
-    return form_list
-
-# USE THE SCRIPT AS A COMMAND-LINE INTERFACE
-# ----------------------------------------------------------------------------
-
-    
-years = set()
-for year in range(1912, 2021):
-    years.append(year)
-    year+=1
-
-my_parser = argparse.ArgumentParser(
-    prog="pinwheel-irs-JSON", description="returns json results of irs forms site scrape"
-)
-my_parser.add_argument(
-    "-forms_info", metavar="forms_info", type=str, help="comma seperated string of forms"
-)
-my_parser.add_argument(
-    "-forms_download", metavar="forms_download", type=str, help="single case-insensitive search term"
-)
-my_parser.add_argument(
-    "-min_year", metavar="min_year", type=str, help="the minimum year", choices = years
-)
-my_parser.add_argument(
-    "-max_year", metavar="max_year", type=str, help="the maximum year", choices= years
-)
-
-args = my_parser.parse_args()
-forms_info = args.forms_info
-forms_download = args.forms_download
-min_year = args.min_year
-max_year = args.max_year
-
-if forms_info:
-    search_query = string_to_list(forms_info)
-elif (forms_download, min_year, max_year):
-    search_query = string_to_list(forms_download)
-
-# ----------------------------------------------------------------------------
-def main():
-    parsed_html = []
-
-    for term in search_query:
-        page_index = 0
-        page_list = [0, 0, 1]
-        while page_list[1] < page_list[2]:
-            html = fetchHTML(page_index, term)
-            table_body_results, page_numbers = prepHTML(html)
-            page_list = page_numbers
-            parsed_markup = parseHTML(table_body_results)
-            parsed_html.extend(parsed_markup)
-            page_index += 200
-    sorted_data, filtered_list = sort_data(parsed_html, search_query)
-    if forms_info:
-        json_conversion = convert_to_json(sorted_data)
-    elif (forms_download, min_year, max_year):
-        pdfs = make_pdf_list(filtered_list, min_year, max_year)
-        download_pdfs(pdfs)
 
 
-if __name__ == "__main__":
-    main()
+
+# if __name__ == "__main__":
+#     main()
