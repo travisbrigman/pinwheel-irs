@@ -5,6 +5,7 @@ from operator import itemgetter
 import argparse
 import urllib.request
 import os
+import re
 
 def fetchHTML(row_index, search_query):
     url_query = search_query.replace(" ", "+")
@@ -117,6 +118,17 @@ def download_pdfs(list_of_pdfs):
 def convert_to_json(managed_list):
     json_results = json.dumps(managed_list, indent=1)
     print(json_results)
+    user_input_create_file = input("would you like to create a JSON file as well? (Y or N) ")
+    if not re.match("^(?:Y|N)$", user_input_create_file):
+        print("Error! Only letters a-z allowed!")
+    elif len(user_input_create_file) > 1:
+        print("Error! Only Y or N allowed!")
+
+    if user_input_create_file == "Y":
+        with open('irs.json', 'w') as outfile:
+            json.dump(managed_list, outfile, indent=1)
+    elif user_input_create_file == "N":
+        print("Ok, thanks running this script! 🐍")
 
 def string_to_list(form_string):
     if form_string.find(",") > -1:
@@ -156,7 +168,6 @@ elif (forms_download, min_year, max_year):
     search_query = string_to_list(forms_download)
 
 # ----------------------------------------------------------------------------
-# search_query = ["Form W-2", "Form 11-C", "Form 1095-C"]
 
 parsed_html = []
 
