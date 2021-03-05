@@ -168,25 +168,26 @@ elif (forms_download, min_year, max_year):
     search_query = string_to_list(forms_download)
 
 # ----------------------------------------------------------------------------
+def main():
+    parsed_html = []
 
-parsed_html = []
-
-for term in search_query:
-    page_index = 0
-    page_list = [0, 0, 1]
-    while page_list[1] < page_list[2]:
-        html = fetchHTML(page_index, term)
-        table_body_results, page_numbers = prepHTML(html)
-        page_list = page_numbers
-        parsed_markup = parseHTML(table_body_results)
-        parsed_html.extend(parsed_markup)
-        page_index += 200
-sorted_data, filtered_list = sort_data(parsed_html, search_query)
-if forms_info:
-    json_conversion = convert_to_json(sorted_data)
-elif (forms_download, min_year, max_year):
-    pdfs = make_pdf_list(filtered_list, min_year, max_year)
-    download_pdfs(pdfs)
+    for term in search_query:
+        page_index = 0
+        page_list = [0, 0, 1]
+        while page_list[1] < page_list[2]:
+            html = fetchHTML(page_index, term)
+            table_body_results, page_numbers = prepHTML(html)
+            page_list = page_numbers
+            parsed_markup = parseHTML(table_body_results)
+            parsed_html.extend(parsed_markup)
+            page_index += 200
+    sorted_data, filtered_list = sort_data(parsed_html, search_query)
+    if forms_info:
+        json_conversion = convert_to_json(sorted_data)
+    elif (forms_download, min_year, max_year):
+        pdfs = make_pdf_list(filtered_list, min_year, max_year)
+        download_pdfs(pdfs)
 
 
-
+if __name__ == "__main__":
+    main()
