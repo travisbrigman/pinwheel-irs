@@ -68,7 +68,7 @@ elif (forms_download, min_year, max_year):
 #TODO: test transmitting and setting up
 #TODO: REGEX for Command Line??
 def main():
-
+    '''main entry point for the script.'''
     parsed_html = []
     for term in search_query:
         page_index = 0
@@ -96,6 +96,11 @@ def main():
 
 
 def string_to_list(form_string):
+    '''
+    convert string ex: "Form 11-C,Form W-2,Form 1095-C" to list.
+    Parameters: form_string (string): a string value either with ',' or without.
+    returns: form_list (list): a list of at least one value
+    '''
     if form_string.find(",") > -1:
         form_list = list(form_string.split(","))
     else:
@@ -104,6 +109,14 @@ def string_to_list(form_string):
     return form_list
 
 def fetchHTML(row_index, search_query):
+    '''
+    gets HTML from site.
+        Parameters: 
+            row_index (int): integer to be passed into URL
+            search_query (string): single search term to b passed into URL
+        Returns:
+            soup (BeautifulSoup): HTML results from URL    
+    '''
     url_query = search_query.replace(" ", "+")
     URL = f'https://apps.irs.gov/app/picklist/list/priorFormPublication.html?resultsPerPage=200&sortColumn=sortOrder&indexOfFirstRow={str(row_index)}&criteria=formNumber&value={url_query}&isDescending=false'
     
@@ -113,6 +126,17 @@ def fetchHTML(row_index, search_query):
     return soup  
 
 def prepHTML(fetched_html):
+    '''
+    Takes raw scraped HTML and prepares it to be manipulated.
+        Parameters:
+            fetched_html (BeautifulSoup): HTML object of type BeautifulSoup
+        Returns:
+            table_body_results (soup): An object of HTML from a section of the page that was scraped.
+            page_numbers (list): a list containing 3 integers.
+                                [0] is lowest result number on page
+                                [1] is highsest number result on page
+                                [2] is total results for search_query
+    '''
     table_body_results = fetched_html.find(id='picklistContentPane')
     page_number = fetched_html.find('th', class_='ShowByColumn')
 
@@ -131,6 +155,17 @@ def prepHTML(fetched_html):
     return table_body_results, page_numbers
 
 def parseHTML(prepped_results):
+    '''
+    Iterates through HTML and extracts matching data points and creates a list of dictionaries containing those data points.
+    Parameters:
+        prepped_results (soup): An object of HTML from a section of the page that was scraped.
+    Returns:
+        Prior_year_product_data (list): List of dictionaires containing:
+                                            form_number ex: 'Form W-2'
+                                            form_title ex: 'Wage and Tax Statement (Info Copy Only)'
+                                            year: ex: 2019
+                                            link: ex: https://www.irs.gov/pub/irs-prior/fw2--2019.pdf
+    '''
     Prior_year_product_data = []
 
     table_elems = prepped_results.find_all('tr', class_=['odd','even'])
@@ -152,6 +187,20 @@ def parseHTML(prepped_results):
     return Prior_year_product_data
 
 def sort_data(parsed_data, query_term):
+    '''
+    Sorts list of all dictionary items against a single query term.
+        Parameters:
+            parsed_data (list): list of dictionary items.
+            query_term (string): single string item ex: 'Form 11-C"
+        Returns:
+            sorted_list (list): a list of dictionary items that summarizes the parsed_data list.
+                                Dictionary contains:
+                                form_number ex: 'Form 11-C'
+                                form_title ex: 'Occupational Tax and Registration Return for Wagering'
+                                min_year ex: 1974
+                                max_year ex: 2017
+            Query_results (list): a list of dictionary items that matched the query_term
+    '''
     sorted_list = []
 
     for term in query_term:
@@ -178,6 +227,15 @@ def sort_data(parsed_data, query_term):
     return sorted_list, Query_results
 
 def make_pdf_list(matching_term_list, min_year, max_year):
+    '''
+    creates a list of PDF's to be downloaded.
+        Parameters:
+            matching_term_list (list): a list of dictionary items that matched the query_term
+            min_year (int): The lowest year to year the user wants results for.
+            max_year (int): The highest, or most recent, year the user wants results for.
+        Returns:
+            items_to_download (list): a list of query matched dictionary items filtered against a range of years.
+    '''
     year_list = []
     items_to_download = []
     if matching_term_list:
@@ -192,6 +250,11 @@ def make_pdf_list(matching_term_list, min_year, max_year):
     return items_to_download
 
 def download_pdfs(list_of_pdfs):
+    '''
+    creates a sub-directory and downloads PDF's to that sub-directory.
+        Parameters:
+            list_of_pdfs (list): list of dictionary items matching search_query and year range.
+    '''
     if list_of_pdfs:
         cwd = os.getcwd()
         directory = "pdfs"
@@ -212,6 +275,12 @@ def download_pdfs(list_of_pdfs):
             
 
 def convert_to_json(managed_list):
+    '''
+    Takes a summarized list of dictionary items and converts it to JSON.
+    Gives the user the option to create a JSON file as well.
+        Parameters:
+            managed_list (list): a list of dictionary items that match search_query and express the min_year and max_year that query is available.
+    '''
     json_results = json.dumps(managed_list, indent=1)
     print(json_results)
     while True:
@@ -227,10 +296,3 @@ def convert_to_json(managed_list):
                 break
         except: 
             print("Error! Only Y or N allowed!")
-
-
-
-
-
-# if __name__ == "__main__":
-#     main()
