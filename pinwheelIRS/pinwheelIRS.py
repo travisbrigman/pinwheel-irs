@@ -15,9 +15,9 @@ for year in range(1912, 2022):
     years.append(year)
     year+=1
 
-def valid_type(arg_value, pat=re.compile(r"([a-zA-Z0-9_-]+[^#$%&*()+=@!><?/;{}])")):
+def valid_type(arg_value, pat=re.compile(r"[\w\s,-]")):
     if not pat.match(arg_value):
-        raise argparse.ArgumentTypeError
+        raise argparse.ArgumentTypeError("must be valid format")
     return arg_value
 
 my_parser = argparse.ArgumentParser(
@@ -49,8 +49,8 @@ def string_to_list(form_string):
         word_list = []
         word_list.append(form_string)
 
+    form_list = []
     for string in word_list:
-        form_list = []
         string.strip()
         form_list.append(string)
 
