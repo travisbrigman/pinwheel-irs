@@ -6,59 +6,65 @@ import argparse
 import urllib.request
 import os
 import re
-import click
 
 # USE THE SCRIPT AS A COMMAND-LINE INTERFACE
 # ----------------------------------------------------------------------------
 
-# years = []
-# for year in range(1912, 2022):
-#     years.append(year)
-#     year+=1
+years = []
+for year in range(1912, 2022):
+    years.append(year)
+    year+=1
 
-# my_parser = argparse.ArgumentParser(
-#     prog="pinwheel-irs-JSON", description="returns json results of irs forms site scrape"
-# )
-# my_parser.add_argument(
-#     "-forms_info", metavar="forms_info", type=str, help="comma seperated string of forms"
-# )
-# my_parser.add_argument(
-#     "-forms_download", metavar="forms_download", type=str, help="single case-insensitive search term"
-# )
-# my_parser.add_argument(
-#     "-min_year", metavar="min_year", type=int, help="the minimum year", choices = years
-# )
-# my_parser.add_argument(
-#     "-max_year", metavar="max_year", type=int, help="the maximum year", choices= years
-# )
+def valid_type(arg_value, pat=re.compile(r"([a-zA-Z0-9_-]+[^#$%&*()+=@!><?/;{}])")):
+    if not pat.match(arg_value):
+        raise argparse.ArgumentTypeError
+    return arg_value
 
-# args = my_parser.parse_args()
-# forms_info = args.forms_info
-# forms_download = args.forms_download
-# min_year = args.min_year
-# max_year = args.max_year
+my_parser = argparse.ArgumentParser(
+    prog="pinwheel-irs-JSON", description="returns json results of irs forms site scrape"
+)
+my_parser.add_argument(
+    "-forms_info", metavar="forms_info", type=valid_type, help="comma seperated string of forms"
+)
+my_parser.add_argument(
+    "-forms_download", metavar="forms_download", type=valid_type, help="single case-insensitive search term"
+)
+my_parser.add_argument(
+    "-min_year", metavar="min_year", type=int, help="the minimum year", choices = years
+)
+my_parser.add_argument(
+    "-max_year", metavar="max_year", type=int, help="the maximum year", choices= years
+)
 
-# def string_to_list(form_string):
-#     if form_string.find(",") > -1:
-#         form_list = list(form_string.split(","))
-#     else:
-#         form_list = []
-#         form_list.append(form_string)
-#     return form_list
+args = my_parser.parse_args()
+forms_info = args.forms_info
+forms_download = args.forms_download
+min_year = args.min_year
+max_year = args.max_year
 
-# if forms_info:
-#     search_query = string_to_list(forms_info)
-# elif (forms_download, min_year, max_year):
-#     search_query = string_to_list(forms_download)
+def string_to_list(form_string):
+    if form_string.find(",") > -1:
+        word_list = list(form_string.split(","))
+    else:
+        word_list = []
+        word_list.append(form_string)
+
+    for string in word_list:
+        form_list = []
+        string.strip()
+        form_list.append(string)
+
+    return form_list
+
+if forms_info:
+    search_query = string_to_list(forms_info)
+elif (forms_download, min_year, max_year):
+    search_query = string_to_list(forms_download)
 
 # ----------------------------------------------------------------------------
-@click.command()
-@click.argument('search_query')
-@click.option('--min-year', default=1913)
-@click.option('--max-year', default=2021)
-def main(search_query, min_year, max_year):
 
-    string_to_list(search_query)
+def main():
+
     parsed_html = []
 
     for term in search_query:
@@ -197,17 +203,20 @@ def download_pdfs(list_of_pdfs):
 def convert_to_json(managed_list):
     json_results = json.dumps(managed_list, indent=1)
     print(json_results)
-    user_input_create_file = input("would you like to create a JSON file as well? (Y or N) ")
-    if not re.match("^(?:Y|N)$", user_input_create_file):
-        print("Error! Only letters a-z allowed!")
-    elif len(user_input_create_file) > 1:
-        print("Error! Only Y or N allowed!")
+    while True:
+        try:
+            user_input_create_file = input("would you like to create a JSON file as well? (Y or N) ")
+            re.match("^(?:Y|N)$", user_input_create_file)
+            if user_input_create_file == "Y":
+                with open('irs.json', 'w') as outfile:
+                    json.dump(managed_list, outfile, indent=1)
+                break
+            elif user_input_create_file == "N":
+                print("Ok, thanks running this script! 🐍")
+                break
+        except: 
+            print("Error! Only Y or N allowed!")
 
-    if user_input_create_file == "Y":
-        with open('irs.json', 'w') as outfile:
-            json.dump(managed_list, outfile, indent=1)
-    elif user_input_create_file == "N":
-        print("Ok, thanks running this script! 🐍")
 
 
 
