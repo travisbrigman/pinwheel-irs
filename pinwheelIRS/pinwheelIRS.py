@@ -39,10 +39,10 @@ my_group.add_argument(
     "-download", metavar="FORMS DOWNLOAD", type=valid_type, help="single case-insensitive search term"
 )
 my_parser.add_argument(
-    "-min", metavar="MIN YEAR", type=int, help="the minimum year", choices=range(1912, 2022)
+    "-min", metavar="MIN YEAR", type=str, help="the minimum year", choices=range(1912, 2022)
 )
 my_parser.add_argument(
-    "-max", metavar="MAX YEAR", type=int, help="the maximum year", choices=range(1912, 2022)
+    "-max", metavar="MAX YEAR", type=str, help="the maximum year", choices=range(1912, 2022)
 )
 
 args = my_parser.parse_args()

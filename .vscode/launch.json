@@ -1,13 +1,15 @@
 {
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["-info","Form 1095-C, Form W-2"]
+            "args": ["-download","Form 1095-C", "-min", "2010", "-max", "2018"],
+            "stopOnEntry": true
         }
     ]
 }
