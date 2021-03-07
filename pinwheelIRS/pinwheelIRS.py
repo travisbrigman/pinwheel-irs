@@ -20,11 +20,6 @@ def valid_type(arg_value, pat=re.compile(r"[\w\s,-]")):
         raise argparse.ArgumentTypeError("must be valid format")
     return arg_value
 
-def valid_dates(arg1, arg2):
-    if arg1 > arg2 and type(arg1) is int and type(arg2 is int):
-        raise argparse.ArgumentTypeError("min year is greater than max year")
-    return arg1, arg2
-
 my_parser = argparse.ArgumentParser(
     prog="pinwheel-irs-JSON", description="returns json results of irs forms site scrape"
 )
@@ -43,7 +38,6 @@ args = my_parser.parse_args()
 forms_info = args.info
 forms_download = args.download
 min_max_year = args.years
-
 
 def string_to_list(form_string):
     if form_string.find(",") > -1:
@@ -65,10 +59,10 @@ elif (forms_download, min_max_year[0], min_max_year[1]):
     search_query = string_to_list(forms_download)
 
 # ----------------------------------------------------------------------------
-# TODO: refactor argparse arguments
 # TODO: Readme.txt (maybe .md too?)
 # TODO: test transmitting and setting up
 # TODO: REGEX for Command Line??
+# TODO: Test input list edge cases
 def main():
     """main entry point for the script."""
     parsed_html = []
@@ -85,7 +79,7 @@ def main():
                 page_index += 200
             sorted_data, filtered_list = sort_data(parsed_html, search_query)
         except IndexError:
-            print("couldn't find anything matching the search_query")
+            print("🤷🏻‍♂️couldn't find anything matching the search_query")
     try:
         if forms_info:
             convert_to_json(sorted_data)
@@ -93,7 +87,7 @@ def main():
             pdfs = make_pdf_list(filtered_list, min_max_year[0], min_max_year[1])
             download_pdfs(pdfs)
     except:
-        print("bad things happen to good code")
+        print("🤮bad things happen to good code")
 
 
 
