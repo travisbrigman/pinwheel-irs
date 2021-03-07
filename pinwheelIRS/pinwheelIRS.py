@@ -39,10 +39,10 @@ my_group.add_argument(
     "-download", metavar="FORMS DOWNLOAD", type=valid_type, help="single case-insensitive search term"
 )
 my_parser.add_argument(
-    "-min", metavar="MIN YEAR", type=str, help="the minimum year", choices=range(1912, 2022)
+    "-min", metavar="MIN YEAR", type=int, help="the minimum year", choices=range(1912, 2022)
 )
 my_parser.add_argument(
-    "-max", metavar="MAX YEAR", type=str, help="the maximum year", choices=range(1912, 2022)
+    "-max", metavar="MAX YEAR", type=int, help="the maximum year", choices=range(1912, 2022)
 )
 
 args = my_parser.parse_args()
@@ -234,7 +234,7 @@ def sort_data(parsed_data, query_term):
             max_year = sorted_query_results[-1]["year"]
 
             sorted_result = {"form_number": form_number, "form_title": form_title, "min_year": min_year,
-                             "max_year": max_year}
+                            "max_year": max_year}
             sorted_list.append(sorted_result)
         else:
             print("no items matched the query")
@@ -251,15 +251,16 @@ def make_pdf_list(matching_term_list, min_year, max_year):
         Returns:
             items_to_download (list): a list of query matched dictionary items filtered against a range of years.
     '''
+
     year_list = []
     items_to_download = []
     if matching_term_list:
-        for year in range(int(min_year) - 1, int(max_year)):
+        for year in range(min_year - 1, max_year):
             year_list.append(year + 1)
-            for list_item in matching_term_list:
-                for form_year in year_list:
-                    if list_item["year"] == str(form_year):
-                        items_to_download.append(list_item)
+        for list_item in matching_term_list:
+            for form_year in year_list:
+                if list_item["year"] == str(form_year):
+                    items_to_download.append(list_item)
     else:
         print("no items in the list match the year range")
     return items_to_download
@@ -279,13 +280,13 @@ def download_pdfs(list_of_pdfs):
         try:
             os.mkdir(path)
         except OSError as error:
-            print(error)
+            print("The directory pdfs already exists. Placing files in that directory")
 
         for item in list_of_pdfs:
             file_name = f"{item['form_number']}-{item['year']}.pdf"
             file_name_dir = os.path.join(path, file_name)
             url = item["link"]
-            print('Beginning file download with urllib2...')
+            print('Beginning file '+ file_name + '...')
 
             urllib.request.urlretrieve(url, file_name_dir)
 
