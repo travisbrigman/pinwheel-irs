@@ -37,10 +37,10 @@ my_parser.add_argument(
 )
 
 args = my_parser.parse_args()
-forms_info = args.forms_info
-forms_download = args.forms_download
-min_year = args.min_year
-max_year = args.max_year
+forms_info = args.info
+forms_download = args.download
+min_year = args.min
+max_year = args.max
 
 def string_to_list(form_string):
     if form_string.find(",") > -1:
@@ -80,15 +80,14 @@ def main():
                 parsed_markup = parseHTML(table_body_results)
                 parsed_html.extend(parsed_markup)
                 page_index += 200
-
-            # assert(len(page_list) > 0), "problems"
-
             sorted_data, filtered_list = sort_data(parsed_html, search_query)
-            if search_query:
-                json_conversion = convert_to_json(sorted_data)
-            elif (search_query, min_year, max_year):
-                pdfs = make_pdf_list(filtered_list, min_year, max_year)
-                download_pdfs(pdfs)
-    
         except(IndexError):
             print("couldn't find anything matching the search_query")
+    try:
+        if search_query:
+            json_conversion = convert_to_json(sorted_data)
+        elif (search_query, min_year, max_year):
+            pdfs = make_pdf_list(filtered_list, min_year, max_year)
+            download_pdfs(pdfs)
+    except:
+        print("bad things happed to good code")
