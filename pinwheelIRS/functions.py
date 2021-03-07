@@ -1,3 +1,18 @@
+'''
+Functions to scrape the IRS Prior Year Publication Site and either summarize info about a form,
+or download the pdf for a range of years.
+
+Functions:
+    string_to_list
+    fetchHTML
+    prepHTML
+    parseHTML
+    sort_data
+    make_pdf_list
+    download_pdfs
+    convert_to_json
+'''
+
 import requests
 from bs4 import BeautifulSoup
 import json

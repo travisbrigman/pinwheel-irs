@@ -1,14 +1,18 @@
+'''
+Runs the functions from function.py. Also sets up all the command line arguments
+
+    Functions:
+        valid_type
+        string_to_list
+        main       
+'''
+
 import argparse
 import re
 from .functions import string_to_list, fetchHTML, prepHTML, parseHTML, sort_data, make_pdf_list, download_pdfs, convert_to_json
 
 # COMMAND-LINE INTERFACE STUFF
 # ----------------------------------------------------------------------------
-
-years = []
-for year in range(1912, 2022):
-    years.append(year)
-    year+=1
 
 def valid_type(arg_value, pat=re.compile(r"[\w\s,-]")):
     if not pat.match(arg_value):
@@ -18,17 +22,18 @@ def valid_type(arg_value, pat=re.compile(r"[\w\s,-]")):
 my_parser = argparse.ArgumentParser(
     prog="pinwheel-irs-JSON", description="returns json results of irs forms site scrape"
 )
-my_parser.add_argument(
-    "-forms_info", metavar="forms_info", type=valid_type, help="comma seperated string of forms"
+my_group = my_parser.add_mutually_exclusive_group(required=True)
+my_group.add_argument(
+    "-info", metavar="FORMS INFO", type=valid_type, help="comma seperated string of forms"
+)
+my_group.add_argument(
+    "-download", metavar="FORMS DOWNLOAD", type=valid_type, help="single case-insensitive search term"
 )
 my_parser.add_argument(
-    "-forms_download", metavar="forms_download", type=valid_type, help="single case-insensitive search term"
+    "-min", metavar="MIN YEAR", type=int, help="the minimum year", choices = range(1912, 2022)
 )
 my_parser.add_argument(
-    "-min_year", metavar="min_year", type=int, help="the minimum year", choices = years
-)
-my_parser.add_argument(
-    "-max_year", metavar="max_year", type=int, help="the maximum year", choices= years
+    "-max", metavar="MAX YEAR", type=int, help="the maximum year", choices= range(1912, 2022)
 )
 
 args = my_parser.parse_args()
@@ -58,7 +63,6 @@ elif (forms_download, min_year, max_year):
 
 # ----------------------------------------------------------------------------
 #TODO: refactor argparse arguments
-#TODO: Help info for CLI
 #TODO: Readme.txt (maybe .md too?)
 #TODO: test transmitting and setting up
 #TODO: REGEX for Command Line??
