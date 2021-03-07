@@ -20,6 +20,11 @@ def valid_type(arg_value, pat=re.compile(r"[\w\s,-]")):
         raise argparse.ArgumentTypeError("must be valid format")
     return arg_value
 
+def valid_dates(arg1, arg2):
+    if arg1 > arg2 and type(arg1) is int and type(arg2 is int):
+        raise argparse.ArgumentTypeError("min year is greater than max year")
+    return arg1, arg2
+
 my_parser = argparse.ArgumentParser(
     prog="pinwheel-irs-JSON", description="returns json results of irs forms site scrape"
 )
@@ -31,17 +36,13 @@ my_group.add_argument(
     "-download", metavar="FORMS DOWNLOAD", type=valid_type, help="single case-insensitive search term"
 )
 my_parser.add_argument(
-    "-min", metavar="MIN YEAR", type=int, help="the minimum year", choices=range(1912, 2022)
-)
-my_parser.add_argument(
-    "-max", metavar="MAX YEAR", type=int, help="the maximum year", choices=range(1912, 2022)
+    "-years", metavar="MIN & MAX YEARS", type=int, help="the minimum and maximum years", choices=range(1912, 2022), nargs=2
 )
 
 args = my_parser.parse_args()
 forms_info = args.info
 forms_download = args.download
-min_year = args.min
-max_year = args.max
+min_max_year = args.years
 
 
 def string_to_list(form_string):
@@ -58,12 +59,10 @@ def string_to_list(form_string):
 
     return form_list
 
-
 if forms_info:
     search_query = string_to_list(forms_info)
-elif (forms_download, min_year, max_year):
+elif (forms_download, min_max_year[0], min_max_year[1]):
     search_query = string_to_list(forms_download)
-
 
 # ----------------------------------------------------------------------------
 # TODO: refactor argparse arguments
@@ -91,7 +90,7 @@ def main():
         if forms_info:
             convert_to_json(sorted_data)
         elif forms_download:
-            pdfs = make_pdf_list(filtered_list, min_year, max_year)
+            pdfs = make_pdf_list(filtered_list, min_max_year[0], min_max_year[1])
             download_pdfs(pdfs)
     except:
         print("bad things happen to good code")
