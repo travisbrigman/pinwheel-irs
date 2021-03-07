@@ -84,7 +84,7 @@ def main():
         except(IndexError):
             print("couldn't find anything matching the search_query")
     try:
-        if search_query:
+        if (search_query, forms_info):
             json_conversion = convert_to_json(sorted_data)
         elif (search_query, min_year, max_year):
             pdfs = make_pdf_list(filtered_list, min_year, max_year)
