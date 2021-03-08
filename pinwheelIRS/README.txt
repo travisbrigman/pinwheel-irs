@@ -2,7 +2,7 @@ Instructions and _errata_ on pinwheelIRS script
 
 Python Version: 3.8.1
 
-To Run The script:
+To Run The script (assuming you have python 3.8.1 or newer installed):
 1. from a terminal cd in the directory
 2. create a virtual environment (either pipenv shell or virtualenv venv)
 3. if you used virtualenv, activate with . venv/bin/activate

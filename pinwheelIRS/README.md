@@ -2,7 +2,7 @@
 
 __Python Version:__ 3.8.1
 
-#### To Run The script:
+#### To Run The script (assuming you have python 3.8.1 or newer installed):
 1. From a terminal ```cd``` in the directory
 2. Create a virtual environment (either ```pipenv shell``` or ```virtualenv venv```)
 3. If you used virtualenv, activate with ```. venv/bin/activate```
