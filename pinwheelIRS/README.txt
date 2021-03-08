@@ -2,6 +2,13 @@ Instructions and _errata_ on pinwheelIRS script
 
 Python Version: 3.8.1
 
+To Run The script:
+1. from a terminal cd in the directory
+2. create a virtual environment (either pipenv shell or virtualenv venv)
+3. if you used virtualenv, activate with . venv/bin/activate
+4. run the command pip install .
+5. the command to run the script is pinwheelIRS
+
 Command Line Arguments:
 -info This is a string that can have multiple comma delimited form names,
 For example: "Form 11-C" or "Form W-2,Form 1095-C,Form 11-C"
@@ -18,10 +25,10 @@ example format: 2018 2020
 -help help in the terminal about the script.
 
 Example form info query:
--info "Form W-2,Form 11-C"
+$ pinwheelIRS -info "Form W-2,Form 11-C"
 
 Example form download query:
--download "Form W-2" -years 2000 2005
+$ pinwheelIRS -download "Form W-2" -years 2000 2005
 
 Things to note:
 
