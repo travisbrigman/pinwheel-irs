@@ -68,7 +68,6 @@ elif (forms_download, min_max_year[0], min_max_year[1]):
 # ----------------------------------------------------------------------------
 # TODO: Readme.txt (maybe .md too?)
 # TODO: test transmitting and setting up
-# TODO: Test input list edge cases
 def main():
     """main entry point for the script."""
     parsed_html = []
