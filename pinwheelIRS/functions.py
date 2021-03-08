@@ -134,7 +134,6 @@ def sort_data(parsed_data, query_term):
 
     for term in query_term:
         Query_results = []
-
         if len(parsed_data) is not None:
             for entry in parsed_data:
                 if entry["form_number"].upper() == term.upper():
@@ -171,13 +170,13 @@ def make_pdf_list(matching_term_list, min_year, max_year):
     year_list = []
     items_to_download = []
     if matching_term_list:
-        for year in range(min_year - 1, max_year):
-            year_list.append(year + 1)
+        for year in range(min_year, max_year + 1):
+            year_list.append(year)
         for list_item in matching_term_list:
             for form_year in year_list:
                 if list_item["year"] == str(form_year):
                     items_to_download.append(list_item)
-    else:
+    if len(items_to_download) == 0:
         print("no items in the list match the year range")
     return items_to_download
 
@@ -202,7 +201,7 @@ def download_pdfs(list_of_pdfs):
             file_name = f"{item['form_number']}-{item['year']}.pdf"
             file_name_dir = os.path.join(path, file_name)
             url = item["link"]
-            print('Beginning file '+ file_name + '...')
+            print('Downloading file '+ file_name + '...')
 
             urllib.request.urlretrieve(url, file_name_dir)
 

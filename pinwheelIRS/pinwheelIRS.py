@@ -48,20 +48,26 @@ def string_to_list(form_string):
 
     form_list = []
     for string in word_list:
-        string.strip()
-        form_list.append(string)
+        stripped_word = string.strip()
+        form_list.append(stripped_word)
 
     return form_list
 
 if forms_info:
     search_query = string_to_list(forms_info)
 elif (forms_download, min_max_year[0], min_max_year[1]):
-    search_query = string_to_list(forms_download)
+    if min_max_year[0] < min_max_year[1]:
+        search_query = string_to_list(forms_download)
+    else:
+        print("min year is more recent than max year")
+        exit()
+    if len(search_query) != 1:
+        print("only one form type can be downloaded at a time")
+        exit()
 
 # ----------------------------------------------------------------------------
 # TODO: Readme.txt (maybe .md too?)
 # TODO: test transmitting and setting up
-# TODO: REGEX for Command Line??
 # TODO: Test input list edge cases
 def main():
     """main entry point for the script."""
